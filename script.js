@@ -341,6 +341,12 @@ function resetAllData() {
 }
 
 function exportToExcel() {
+    // 1. إعداد الترويسة (Header) بناءً على الملف المرفق
+    const dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
+    
+    const templateStructure = [
+        [`DATE : ${dateStr}`, "", "NAME : KENAN ARABIC", "", "", "DAILY WORK SCHEDULE", "", "Mobile # : +966500469088", ""],
+        [" ", "", "", "", "", "", "", "", ""], // سطر فارغ للجمالية
     // تعريف لون الخلفية (مثلاً لون رمادي فاتح للرؤوس)
     const headerStyle = {
         fill: { fgColor: { rgb: "D3D3D3" } }, // لون الخلفية
