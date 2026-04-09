@@ -1,0 +1,166 @@
+:root {
+    --bg-main: #0b0f19;
+    --bg-card: #151b2b;
+    --bg-hover: #1e2638;
+    --primary: #6366f1;
+    --secondary: #0ea5e9;
+    --accent: #10b981;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --border-color: rgba(255, 255, 255, 0.08);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', sans-serif; background: var(--bg-main); color: var(--text-main); direction: rtl; overflow-x: hidden; }
+
+.page { display: none; min-height: 100vh; width: 100%; padding: 20px; }
+.page.active { display: block; animation: fadeIn 0.4s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.login-container { max-width: 380px; margin: 80px auto; background: var(--bg-card); padding: 40px; border-radius: 20px; border: 1px solid var(--border-color); text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+.input-field input { width: 100%; padding: 14px; margin: 10px 0; border-radius: 10px; border: 1px solid var(--border-color); background: #000; color: #fff; outline: none; }
+.btn-primary { width: 100%; padding: 14px; background: var(--primary); border: none; color: #fff; border-radius: 10px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: 0.3s; }
+.btn-primary:hover { background: #4f46e5; }
+
+.main-layout { display: flex; gap: 20px; flex-wrap: wrap; max-width: 1200px; margin: 0 auto; }
+.engineers-column { flex: 1.5; min-width: 320px; }
+.inventory-column { flex: 1; min-width: 300px; }
+
+.eng-item { background: var(--bg-card); padding: 15px; border-radius: 15px; margin-bottom: 12px; cursor: pointer; border: 1px solid var(--border-color); display: flex; align-items: center; transition: 0.3s; }
+.eng-item:hover { border-color: var(--secondary); background: var(--bg-hover); transform: translateX(-5px); }
+.avatar { width: 45px; height: 45px; background: linear-gradient(45deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; border-radius: 12px; margin-left: 15px; font-weight: bold; }
+
+.tag-mini { background: rgba(99, 102, 241, 0.1); color: #818cf8; padding: 3px 8px; border-radius: 5px; font-size: 0.7rem; margin: 2px; display: inline-block; border: 1px solid rgba(99, 102, 241, 0.2); }
+
+.btn-add-order { background: var(--secondary); color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+.btn-add-order:hover { transform: scale(1.05); }
+
+.order-card { background: rgba(14, 165, 233, 0.05); border: 1px solid rgba(14, 165, 233, 0.2); padding: 15px; border-radius: 12px; margin-bottom: 10px; cursor: pointer; transition: 0.3s; }
+.order-card:hover { background: rgba(14, 165, 233, 0.1); border-color: var(--secondary); }
+
+.inventory-card { background: var(--bg-card); padding: 25px; border-radius: 20px; border: 1px solid var(--border-color); }
+.pool-category h4 { color: var(--secondary); margin-bottom: 10px; font-size: 0.9rem; }
+.pool-item { background: rgba(255,255,255,0.03); padding: 6px 12px; border-radius: 8px; margin: 4px; display: inline-block; font-size: 0.8rem; border: 1px solid var(--border-color); }
+
+.selection-layout { display: flex; height: 90vh; gap: 20px; }
+.categories-panel { width: 380px; background: var(--bg-card); padding: 25px; border-radius: 20px; overflow-y: auto; }
+.summary-panel { flex: 1; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.2); border-radius: 20px; }
+
+.item-chip { display: inline-block; padding: 10px 15px; margin: 5px; border: 1px solid var(--border-color); border-radius: 10px; cursor: pointer; font-size: 0.85rem; transition: 0.2s; }
+.item-chip.selected { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 5px 15px var(--primary); }
+.item-chip.disabled { opacity: 0.15; cursor: not-allowed; border-style: dashed; }
+
+.btn-save { background: var(--accent); color: white; padding: 18px 40px; border: none; border-radius: 15px; cursor: pointer; font-weight: bold; font-size: 1.1rem; box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3); }
+.btn-reset { margin-top: 15px; background: transparent; color: #444; border: 1px solid #333; padding: 8px; border-radius: 8px; width: 100%; cursor: pointer; }
+.btn-back { background: none; border: none; color: var(--text-muted); margin-top: 15px; cursor: pointer; display: block; width: 100%; }
+/* أضف هذا التعديل لتمييز أوامر العمل القابلة للتعديل */
+/* تحسين شكل بطاقة أمر العمل في السجل */
+.order-card {
+    background: rgba(14, 165, 233, 0.1);
+    border: 1px solid var(--secondary);
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.order-card:hover {
+    background: rgba(14, 165, 233, 0.2);
+    transform: scale(1.02);
+}
+
+.order-card strong {
+    color: var(--secondary);
+}
+
+.btn-add-order {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.btn-danger-all {
+    width: 100%;
+    padding: 14px;
+    background: #dc2626; /* لون أحمر صريح */
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 15px;
+    box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+    transition: 0.3s;
+}
+
+.btn-danger-all:hover {
+    background: #b91c1c;
+    transform: scale(1.02);
+}
+
+.btn-danger-all:active {
+    transform: scale(0.98);
+}
+/* حاوية البطاقة مع زر الحذف */
+.order-card-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.order-card {
+    flex: 1; /* البطاقة تأخذ المساحة المتاحة */
+    background: rgba(14, 165, 233, 0.05);
+    border: 1px solid rgba(14, 165, 233, 0.2);
+    padding: 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.order-card:hover {
+    background: rgba(14, 165, 233, 0.15);
+    border-color: var(--secondary);
+}
+
+/* زر الحذف الصغير */
+.btn-delete-item {
+    background: rgba(220, 38, 38, 0.1);
+    border: 1px solid rgba(220, 38, 38, 0.3);
+    color: #ef4444;
+    padding: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.3s;
+    font-size: 1.1rem;
+}
+
+.btn-delete-item:hover {
+    background: #dc2626;
+    color: white;
+    transform: scale(1.1);
+}
+/* إضافة تنسيق للـ Select Box ليطابق الـ Input */
+.input-field select {
+    width: 100%;
+    padding: 14px;
+    margin: 10px 0;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: #000;
+    color: #fff;
+    outline: none;
+    appearance: none; /* إخفاء سهم المتصفح الافتراضي */
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: left 15px center; /* وضع السهم في اليسار لأن الموقع RTL */
+}
+img {
+  width: 100%;    /* الصورة ستأخذ كامل عرض الـ div الموجودة بداخله */
+  max-width: 500px; /* لن يتجاوز عرض الصورة 500 بكسل مهما كان حجم الشاشة */
+  height: auto;   /* الحفاظ على تناسق الأبعاد ومنع تمدد الصورة بشكل سيء */
+}
