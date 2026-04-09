@@ -231,6 +231,33 @@ function confirmSelection() {
     renderOrders();
     goToPage('engineers-page');
     alert("تم الحفظ بنجاح");
+const webAppUrl = "https://script.google.com/macros/s/AKfycby1FZZ8a4JXdjLcHQKDqTa6EwLHXUKYMfwOsfxEldulO4aZ-lz_qv3Ey-Nli0vyFGzoog/exec";
+
+    // تجهيز البيانات للإرسال
+    // سنقوم بإرسال كل "أصل" (Asset) مسجل في مصفوفة tempSelection
+    for (let asset of tempSelection) {
+        const dataToSend = {
+            code: assetCodes[asset] || "N/A",
+            orderNo: currentOrderNumber,
+            consultant: document.getElementById('order-consultant').value,
+            site: document.getElementById('order-site').value,
+            coords: document.getElementById('order-coords').value,
+            asset: asset,
+            contact: contactLeads[asset] || "N/A",
+            engineer: currentEng,
+            engContact: contactLeads[currentEng] || "N/A"
+        };
+
+        // إرسال البيانات إلى Google Sheets
+        fetch(webAppUrl, {
+            method: 'POST',
+            mode: 'no-cors', // لتجنب مشاكل الـ CORS
+            body: JSON.stringify(dataToSend)
+        });
+    }
+
+    // بقية كود الحفظ في localStorage والتنبيهات
+    alert("تم الحفظ في المتصفح وإرسال البيانات لـ Google Sheets");
 }
 
 // عرض سجل أوامر العمل مع زر الحذف
