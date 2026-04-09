@@ -341,78 +341,58 @@ function resetAllData() {
 }
 
 function exportToExcel() {
-    // 1. إعداد الترويسة (Header) بناءً على الملف المرفق
-    const dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
-    
-    const templateStructure = [
-        [`DATE : ${dateStr}`, "", "NAME : KENAN ARABIC", "", "", "DAILY WORK SCHEDULE", "", "Mobile # : +966500469088", ""],
-        [" ", "", "", "", "", "", "", "", ""], // سطر فارغ للجمالية
-        [
-            "GROUP COAD", 
-            "WORK ORDER NUMBER.", 
-            "CONSULTANT COMPANY NAME", 
-            "LOCATION", 
-            "LOCATION X,Y", 
-            "WORK TYPE", 
-            "DESCRIPTION", 
-            "FOREMAN NAME", 
-            "FOREMAN MOBILE NUMBER", 
-            "RESPONSIBLE ENGINEERS AND CONTACT NUMBER"
-        ]
-    ];
-    
-    const rows = [];
+    // تعريف لون الخلفية (مثلاً لون رمادي فاتح للرؤوس)
+    const headerStyle = {
+        fill: { fgColor: { rgb: "D3D3D3" } }, // لون الخلفية
+        font: { bold: true, color: { rgb: "000000" } }, // خط عريض
+        alignment: { horizontal: "center", vertical: "center" }, // تواصل
+        border: {
+            top: { style: "thin" }, bottom: { style: "thin" },
+            left: { style: "thin" }, right: { style: "thin" }
+        }
+    };
 
-    // 2. توزيع البيانات داخل الصفوف
+    // الصف الخامس (رؤوس الجدول) مع إضافة التنسيق لكل خلية
+    const headers = [
+        "GROUP COAD", "WORK ORDER NUMBER.", "CONSULTANT COMPANY NAME", 
+        "LOCATION", "LOCATION X,Y", "WORK TYPE", "DESCRIPTION", 
+        "FOREMAN NAME", "FOREMAN MOBILE NUMBER", "RESPONSIBLE ENGINEERS"
+    ].map(title => ({ v: title, s: headerStyle })); // تحويل كل نص إلى خلية منسقة
+
+    const emptyRows = [[], [], [], []]; // 4 صفوف فارغة
+    const finalData = [...emptyRows, headers];
+
+    // تجميع بيانات الصفوف (بدون تلوين أو بتنسيق بسيط)
+    const dataStyle = { alignment: { horizontal: "right" } };
+
     Object.entries(allWorkOrders).forEach(([no, d]) => {
         if (d.assets) {
             d.assets.forEach(asset => {
                 const code = assetCodes[asset] || "N/A";
-                // دمج اسم المهندس مع رقمه كما في الملف المرفق
-                const engInfo = `${d.engineer} - ${contactLeads[d.engineer] || ''}`;
-                
-                rows.push([
-                    code,                           // GROUP COAD
-                    no,                             // WORK ORDER NUMBER
-                    d.consultant || "N/A",          // CONSULTANT
-                    d.site || "N/A",                // LOCATION
-                    d.coords || "N/A",              // LOCATION X,Y
-                    "CONSTRUCTION",                 // WORK TYPE (افتراضي)
-                    "MAINTENANCE",                  // DESCRIPTION (افتراضي)
-                    asset,                          // FOREMAN NAME (اسم الفرقة/المعدة)
-                    contactLeads[asset] || "N/A",   // FOREMAN MOBILE
-                    engInfo                         // RESPONSIBLE ENGINEER
+                finalData.push([
+                    { v: code, s: dataStyle },
+                    { v: no, s: dataStyle },
+                    { v: d.consultant || "N/A", s: dataStyle },
+                    { v: d.site || "N/A", s: dataStyle },
+                    { v: d.coords || "N/A", s: dataStyle },
+                    { v: "CONSTRUCTION", s: dataStyle },
+                    { v: "MAINTENANCE", s: dataStyle },
+                    { v: asset, s: dataStyle },
+                    { v: contactLeads[asset] || "N/A", s: dataStyle },
+                    { v: `${d.engineer} - ${contactLeads[d.engineer] || ''}`, s: dataStyle }
                 ]);
             });
         }
     });
 
-    if (rows.length === 0) return alert("لا توجد بيانات لتصديرها");
-
-    // 3. دمج الترويسة مع البيانات
-    const finalData = [...templateStructure, ...rows];
     const ws = XLSX.utils.aoa_to_sheet(finalData);
+    
+    // ضبط العرض
+    ws['!cols'] = [{wch: 12}, {wch: 15}, {wch: 25}, {wch: 15}, {wch: 25}, {wch: 15}, {wch: 20}, {wch: 18}, {wch: 18}, {wch: 35}];
 
-    // 4. تنسيق عرض الأعمدة ليطابق الملف الأصلي
-    ws['!cols'] = [
-        {wch: 12}, // A
-        {wch: 20}, // B
-        {wch: 25}, // C
-        {wch: 15}, // D
-        {wch: 25}, // E
-        {wch: 15}, // F
-        {wch: 20}, // G
-        {wch: 18}, // H
-        {wch: 18}, // I
-        {wch: 35}  // J
-    ];
-
-    // 5. إنشاء وتحميل الملف
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Work Schedule");
-    
-    const fileName = `DAILY_WORK_SCHEDULE_${dateStr.replace(/ /g, '_')}.xlsx`;
-    XLSX.writeFile(wb, fileName);
+    XLSX.writeFile(wb, `Daily_Schedule_${new Date().getTime()}.xlsx`);
 }
 
 
