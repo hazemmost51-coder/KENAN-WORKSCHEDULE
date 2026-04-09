@@ -341,19 +341,25 @@ function resetAllData() {
 }
 
 function exportToExcel() {
-    // 1. تعريف العناوين (Headers)
-    const header = ["كود الفرقة","رقم الأمر", "الاستشاري", "اسم الموقع", "الإحداثيات", "المعدة / الفرقة", "رقم التواصل للفرقة", "المهندس","رقم التواصل للمهندس"];
+    // 1. تعريف 4 صفوف فارغة تماماً (Empty Rows)
+    // الصف الخامس هو اللي هيكون فيه رؤوس الجدول (Headers)
+    const emptyRows = [
+        [], // الصف الأول فاضي
+        [], // الصف الثاني فاضي
+        [], // الصف الثالث فاضي
+        [], // الصف الرابع فاضي
+        // الصف الخامس: بداية رأس الجدول
+        ["كود الفرقة","رقم الأمر العمل", "الاستشاري", "اسم الموقع", "الإحداثيات", "الفرقة", "رقم التواصل للفرقة", "المهندس المسؤول","رقم التواصل للمهندس"]
+    ];
     
     const rows = [];
 
-    // 2. المرور على كل أمر عمل
+    // 2. تجميع البيانات كالمعتاد
     Object.entries(allWorkOrders).forEach(([no, d]) => {
-        if (d.assets && d.assets.length > 0) {
+        if (d.assets) {
             d.assets.forEach(asset => {
-                // الشرط الجوهري: نتحقق أولاً هل للمعدة كود في قاعدة بيانات الأكواد؟
                 const code = assetCodes[asset];
-                
-                if (code) { // لن يتم إضافة السطر إلا إذا كان المتغير code يحتوي على قيمة
+                if (code) {
                     rows.push([
                         code,
                         no,
@@ -370,20 +376,32 @@ function exportToExcel() {
         }
     });
 
-    // 3. التحقق من وجود بيانات (ذات أكواد) قبل التحميل
     if (rows.length === 0) {
-        alert("لا توجد معدات ذات أكواد (Codes) مسجلة حالياً لتصديرها");
+        alert("لا توجد بيانات مكودة لتصديرها حالياً");
         return;
     }
 
-    // 4. إنشاء ملف الإكسيل
-    const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "سجل المعدات المكودة");
+    // 3. دمج الصفوف الفاضية مع البيانات
+    const finalData = [...emptyRows, ...rows];
 
-    // 5. تحميل الملف
-    XLSX.writeFile(wb, `Coded_Assets_Report_${new Date().getTime()}.xlsx`);
+    // 4. تحويل المصفوفة إلى شيت
+    const ws = XLSX.utils.aoa_to_sheet(finalData);
+
+    // 5. ضبط عرض الأعمدة عشان البيانات تظهر بوضوح
+    ws['!cols'] = [
+        {wch: 12}, {wch: 15}, {wch: 15}, {wch: 15}, 
+        {wch: 20}, {wch: 15}, {wch: 15}, {wch: 25}, {wch: 20}
+    ];
+
+    // 6. إنشاء الملف وتحميله
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Kenan_Report");
+
+    // التحميل باسم يحتوي على تاريخ اليوم
+    XLSX.writeFile(wb, `Report_${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}.xlsx`);
 }
+
+
 // دالة المسح الشامل والبدء من الصفر
 function resetAllData() {
     const confirmAction = confirm("تنبيه هائل: سيتم حذف كافة أوامر العمل، الإحداثيات، وسجل المهندسين نهائياً. هل أنت متأكد؟");
