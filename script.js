@@ -61,7 +61,7 @@ window.onload = () => {
 };
 
 // 3. منطق تسجيل الدخول
-function handleLogin() {
+function Login() {
     const userInp = document.getElementById('login-user').value;
     const passInp = document.getElementById('login-pass').value;
 
