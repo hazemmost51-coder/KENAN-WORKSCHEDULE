@@ -359,8 +359,7 @@ function exportToExcel() {
     // 2. بناء البيانات
     // نضع النص في أول خلية فقط لأننا سنقوم بعمل Merge للبقية
     const finalData = [
-        [{ v: `DAILY WORK SCHEDULE - ${dateStr}`, s: titleStyle }], // الصف الأول
-        [] // صف فارغ للفصل (اختياري)
+        [{ v: `DAILY WORK SCHEDULE - ${dateStr}`, s: titleStyle, 'KENAN ARABIAN (SAFETY ENGINEER:00000)' }]
     ];
 
     // 3. إعداد رؤوس الجدول (الصف الثالث)
