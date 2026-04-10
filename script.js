@@ -349,7 +349,7 @@ function exportToExcel() {
         [`DATE : ${dateStr}`, "", "NAME : KENAN ARABIC", "", "", "DAILY WORK SCHEDULE", "", "Mobile # : +966500469088", ""],
         [" ", "", "", "", "", "", "", "", ""], // سطر فارغ للجمالية
     // تعريف لون الخلفية (مثلاً لون رمادي فاتح للرؤوس)
-    const headerStyle = {
+    /*const headerStyle = {
         fill: { fgColor: { rgb: "D3D3D3" } }, // لون الخلفية
         font: { bold: true, color: { rgb: "000000" } }, // خط عريض
         alignment: { horizontal: "center", vertical: "center" }, // تواصل
@@ -357,7 +357,7 @@ function exportToExcel() {
             top: { style: "thin" }, bottom: { style: "thin" },
             left: { style: "thin" }, right: { style: "thin" }
         }
-    };
+    };*/
 
     // الصف الخامس (رؤوس الجدول) مع إضافة التنسيق لكل خلية
     const headers = [
