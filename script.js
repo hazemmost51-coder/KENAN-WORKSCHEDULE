@@ -313,7 +313,94 @@ function editExistingOrder(no) {
 }
 
 function updateAvailablePool() {
-    const pool = document.getElementById('available-pool');
+    const pool = function exportToExcel() {
+    const dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
+
+    // 1. تنسيق الصف الأول (كبير وعريض وخلفية رمادية)
+    const titleStyle = {
+        fill: { patternType: "solid", fgColor: { rgb: "D3D3D3" } },
+        font: { bold: true, color: { rgb: "000000" }, name: "Arial", sz: 16 }, // حجم الخط 16
+        alignment: { horizontal: "center", vertical: "center" },
+        border: {
+            top: { style: "thin" },
+            bottom: { style: "thin" },
+            left: { style: "thin" },
+            right: { style: "thin" }
+        }
+    };
+
+    const headerStyle = {
+        fill: { patternType: "solid", fgColor: { rgb: "EFEFEF" } }, // رمادي أفتح قليلاً للرؤوس
+        font: { bold: true, sz: 11 },
+        alignment: { horizontal: "center", vertical: "center", wrapText: true },
+        border: {
+            top: { style: "thin" }, bottom: { style: "thin" },
+            left: { style: "thin" }, right: { style: "thin" }
+        }
+    };
+
+    const dataStyle = { alignment: { horizontal: "right" } };
+
+    // 2. بناء البيانات
+    // نضع النص في أول خلية فقط لأننا سنقوم بعمل Merge للبقية
+    const finalData = [
+        [{ v: `DAILY WORK SCHEDULE - ${dateStr}`, s: titleStyle }], // الصف الأول
+        [] // صف فارغ للفصل (اختياري)
+    ];
+
+    // 3. إعداد رؤوس الجدول (الصف الثالث)
+    const headers = [
+        "GROUP COAD", "WORK ORDER NUMBER.", "CONSULTANT COMPANY NAME", 
+        "LOCATION", "LOCATION X,Y", "WORK TYPE", "DESCRIPTION", 
+        "FOREMAN NAME", "FOREMAN MOBILE NUMBER", "RESPONSIBLE ENGINEERS"
+    ].map(title => ({ v: title, s: headerStyle }));
+
+    finalData.push(headers);
+
+    // 4. إضافة البيانات (نفس الكود السابق)
+    Object.entries(allWorkOrders).forEach(([no, d]) => {
+        if (d.assets) {
+            d.assets.forEach(asset => {
+                const code = assetCodes[asset] || "N/A";
+                finalData.push([
+                    { v: code, s: dataStyle },
+                    { v: no, s: dataStyle },
+                    { v: d.consultant || "N/A", s: dataStyle },
+                    { v: d.site || "N/A", s: dataStyle },
+                    { v: d.coords || "N/A", s: dataStyle },
+                    { v: "CONSTRUCTION", s: dataStyle },
+                    { v: "MAINTENANCE", s: dataStyle },
+                    { v: asset, s: dataStyle },
+                    { v: contactLeads[asset] || "N/A", s: dataStyle },
+                    { v: `${d.engineer} - ${contactLeads[d.engineer] || ''}`, s: dataStyle }
+                ]);
+            });
+        }
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(finalData);
+
+    // 5. عمل الميرج (Merge) للصف الأول
+    // s: Start, e: End | r: Row, c: Column (يبدأ من 0)
+    // هنا ندمج من العمود 0 إلى العمود 9 في الصف رقم 0
+    ws['!merges'] = [
+        { s: { r: 0, c: 0 }, e: { r: 0, c: 9 } } 
+    ];
+
+    // ضبط ارتفاع الصف الأول ليكون كبيراً
+    ws['!rows'] = [{ hpt: 40 }]; // ارتفاع 40 نقطة
+
+    // ضبط عرض الأعمدة
+    ws['!cols'] = [
+        {wch: 12}, {wch: 15}, {wch: 25}, {wch: 15}, {wch: 25}, 
+        {wch: 15}, {wch: 20}, {wch: 18}, {wch: 18}, {wch: 35}
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Work Schedule");
+    XLSX.writeFile(wb, `Kenan_Daily_Schedule_${new Date().getTime()}.xlsx`);
+}
+ entById('available-pool');
     pool.innerHTML = "";
     const allReserved = Object.values(allWorkOrders).flatMap(o => o.assets);
 
@@ -341,86 +428,7 @@ function resetAllData() {
     }
 }
 
-function exportToExcel() {
-    // 1. تعريف التاريخ
-    const dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
 
-    // 2. تعريف الستايل (يجب أن يكون خارج المصفوفات ليتم استخدامه لاحقاً)
-    const headerStyle = {
-        fill: { 
-            patternType: "solid", 
-            fgColor: { rgb: "D3D3D3" } 
-        },
-        font: { 
-            bold: true, 
-            color: { rgb: "000000" },
-            name: "Arial",
-            sz: 11
-        },
-        alignment: { 
-            horizontal: "center", 
-            vertical: "center",
-            wrapText: true 
-        },
-        border: {
-            top: { style: "thin" },
-            bottom: { style: "thin" },
-            left: { style: "thin" },
-            right: { style: "thin" }
-        }
-    };
-
-    const dataStyle = { alignment: { horizontal: "right" } };
-
-    // 3. بناء هيكل الشيت
-    // أول سطرين (المعلومات العامة)
-    const finalData = [
-        [`DATE : ${dateStr}`, "KENAN ARABIC","DAILY WORK SCHEDULE", "Safety Engineer: MOHAMED MASHRAQI", "Mobile # : +966500469088"]
-    ];
-
-    // 4. إعداد رؤوس الجدول (الصف الخامس الملون)
-    const headers = [
-        "GROUP COAD", "WORK ORDER NUMBER.", "CONSULTANT COMPANY NAME", 
-        "LOCATION", "LOCATION X,Y", "WORK TYPE", "DESCRIPTION", 
-        "FOREMAN NAME", "FOREMAN MOBILE NUMBER", "RESPONSIBLE ENGINEERS"
-    ].map(title => ({ v: title, s: headerStyle }));
-
-    finalData.push(headers);
-
-    // 5. تجميع بيانات الصفوف من أوامر العمل
-    Object.entries(allWorkOrders).forEach(([no, d]) => {
-        if (d.assets) {
-            d.assets.forEach(asset => {
-                const code = assetCodes[asset] || "N/A";
-                finalData.push([
-                    { v: code, s: dataStyle },
-                    { v: no, s: dataStyle },
-                    { v: d.consultant || "N/A", s: dataStyle },
-                    { v: d.site || "N/A", s: dataStyle },
-                    { v: d.coords || "N/A", s: dataStyle },
-                    { v: "CONSTRUCTION", s: dataStyle },
-                    { v: "MAINTENANCE", s: dataStyle },
-                    { v: asset, s: dataStyle },
-                    { v: contactLeads[asset] || "N/A", s: dataStyle },
-                    { v: `${d.engineer} - ${contactLeads[d.engineer] || ''}`, s: dataStyle }
-                ]);
-            });
-        }
-    });
-
-    // 6. إنشاء الشيت والتحميل
-    const ws = XLSX.utils.aoa_to_sheet(finalData);
-    
-    // ضبط عرض الأعمدة
-    ws['!cols'] = [
-        {wch: 12}, {wch: 15}, {wch: 25}, {wch: 15}, {wch: 25}, 
-        {wch: 15}, {wch: 20}, {wch: 18}, {wch: 18}, {wch: 35}
-    ];
-
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Work Schedule");
-    XLSX.writeFile(wb, `Kenan_Daily_Schedule_${new Date().getTime()}.xlsx`);
-}
 
 
 // دالة المسح الشامل والبدء من الصفر
