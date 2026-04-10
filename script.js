@@ -342,64 +342,64 @@ function resetAllData() {
 }
 
 function exportToExcel() {
-    // 1. إعداد الترويسة (Header) بناءً على الملف المرفق
-    const dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
+    // 1. تعريف 4 صفوف فارغة تماماً (Empty Rows)
+    // الصف الخامس هو اللي هيكون فيه رؤوس الجدول (Headers)
+    const emptyRows = [
+        [], // الصف الأول فاضي
+        [], // الصف الثاني فاضي
+        [], // الصف الثالث فاضي
+        [], // الصف الرابع فاضي
+        // الصف الخامس: بداية رأس الجدول
+        ["كود الفرقة","رقم الأمر العمل", "الاستشاري", "اسم الموقع", "الإحداثيات", "الفرقة", "رقم التواصل للفرقة", "المهندس المسؤول","رقم التواصل للمهندس"]
+    ];
     
-    const templateStructure = [
-        [`DATE : ${dateStr}`, "", "NAME : KENAN ARABIC", "", "", "DAILY WORK SCHEDULE", "", "Mobile # : +966500469088", ""],
-        [" ", "", "", "", "", "", "", "", ""], // سطر فارغ للجمالية
-    // تعريف لون الخلفية (مثلاً لون رمادي فاتح للرؤوس)
-    /*const headerStyle = {
-        fill: { fgColor: { rgb: "D3D3D3" } }, // لون الخلفية
-        font: { bold: true, color: { rgb: "000000" } }, // خط عريض
-        alignment: { horizontal: "center", vertical: "center" }, // تواصل
-        border: {
-            top: { style: "thin" }, bottom: { style: "thin" },
-            left: { style: "thin" }, right: { style: "thin" }
-        }
-    };*/
+    const rows = [];
 
-    // الصف الخامس (رؤوس الجدول) مع إضافة التنسيق لكل خلية
-    const headers = [
-        "GROUP COAD", "WORK ORDER NUMBER.", "CONSULTANT COMPANY NAME", 
-        "LOCATION", "LOCATION X,Y", "WORK TYPE", "DESCRIPTION", 
-        "FOREMAN NAME", "FOREMAN MOBILE NUMBER", "RESPONSIBLE ENGINEERS"
-    ].map(title => ({ v: title, s: headerStyle })); // تحويل كل نص إلى خلية منسقة
-
-    const emptyRows = [[], [], [], []]; // 4 صفوف فارغة
-    const finalData = [...emptyRows, headers];
-
-    // تجميع بيانات الصفوف (بدون تلوين أو بتنسيق بسيط)
-    const dataStyle = { alignment: { horizontal: "right" } };
-
+    // 2. تجميع البيانات كالمعتاد
     Object.entries(allWorkOrders).forEach(([no, d]) => {
         if (d.assets) {
             d.assets.forEach(asset => {
-                const code = assetCodes[asset] || "N/A";
-                finalData.push([
-                    { v: code, s: dataStyle },
-                    { v: no, s: dataStyle },
-                    { v: d.consultant || "N/A", s: dataStyle },
-                    { v: d.site || "N/A", s: dataStyle },
-                    { v: d.coords || "N/A", s: dataStyle },
-                    { v: "CONSTRUCTION", s: dataStyle },
-                    { v: "MAINTENANCE", s: dataStyle },
-                    { v: asset, s: dataStyle },
-                    { v: contactLeads[asset] || "N/A", s: dataStyle },
-                    { v: `${d.engineer} - ${contactLeads[d.engineer] || ''}`, s: dataStyle }
-                ]);
+                const code = assetCodes[asset];
+                if (code) {
+                    rows.push([
+                        code,
+                        no,
+                        d.consultant || "N/A",
+                        d.site || "N/A",
+                        d.coords || "N/A",
+                        asset, 
+                        contactLeads[asset] || "N/A",
+                        d.engineer,
+                        contactLeads[d.engineer] || "N/A"
+                    ]);
+                }
             });
         }
     });
 
-    const ws = XLSX.utils.aoa_to_sheet(finalData);
-    
-    // ضبط العرض
-    ws['!cols'] = [{wch: 12}, {wch: 15}, {wch: 25}, {wch: 15}, {wch: 25}, {wch: 15}, {wch: 20}, {wch: 18}, {wch: 18}, {wch: 35}];
+    if (rows.length === 0) {
+        alert("لا توجد بيانات مكودة لتصديرها حالياً");
+        return;
+    }
 
+    // 3. دمج الصفوف الفاضية مع البيانات
+    const finalData = [...emptyRows, ...rows];
+
+    // 4. تحويل المصفوفة إلى شيت
+    const ws = XLSX.utils.aoa_to_sheet(finalData);
+
+    // 5. ضبط عرض الأعمدة عشان البيانات تظهر بوضوح
+    ws['!cols'] = [
+        {wch: 12}, {wch: 15}, {wch: 15}, {wch: 15}, 
+        {wch: 20}, {wch: 15}, {wch: 15}, {wch: 25}, {wch: 20}
+    ];
+
+    // 6. إنشاء الملف وتحميله
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Work Schedule");
-    XLSX.writeFile(wb, `Daily_Schedule_${new Date().getTime()}.xlsx`);
+    XLSX.utils.book_append_sheet(wb, ws, "Kenan_Report");
+
+    // التحميل باسم يحتوي على تاريخ اليوم
+    XLSX.writeFile(wb, `Report_${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}.xlsx`);
 }
 
 
