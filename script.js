@@ -62,15 +62,12 @@ window.onload = () => {
 
 // 3. منطق تسجيل الدخول
 function handleLogin() {
-    const userInp = document.getElementById('login-user').value.trim();
-    const passInp = document.getElementById('login-pass').value.trim();
+    const userInp = document.getElementById('login-user').value;
+    const passInp = document.getElementById('login-pass').value;
 
-    // التحقق من القيم
     if ((userInp === "1" || userInp === "2") && (passInp === "1" || passInp === "2")) {
-        // إخفاء صفحة الدخول وإظهار صفحة المهندسين مباشرة أو أوامر العمل
-        goToPage('work-order-page'); 
+        goToPage('work-order-page');
     } else {
-        alert("اسم المستخدم أو كلمة المرور غير صحيحة");
         const err = document.getElementById('error-txt');
         if(err) err.style.display = "block";
     }
