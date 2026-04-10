@@ -313,7 +313,22 @@ function editExistingOrder(no) {
 }
 
 function updateAvailablePool() {
-    const pool = function exportToExcel() {
+    const pool = document.getElementById('available-pool');
+    pool.innerHTML = "";
+    const allReserved = Object.values(allWorkOrders).flatMap(o => o.assets);
+
+    for (const [cat, items] of Object.entries(dataStore)) {
+        const avail = items.filter(i => !allReserved.includes(i));
+        if (avail.length > 0) {
+            const d = document.createElement('div');
+            d.className = 'pool-category';
+            d.innerHTML = `<h4>${cat}</h4><div class="pool-items-group">${avail.map(i => `<span class="pool-item">${i}</span>`).join('')}</div>`;
+            pool.appendChild(d);
+        }
+    }
+}
+
+function exportToExcel() {
     const dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
 
     // 1. تنسيق الصف الأول (كبير وعريض وخلفية رمادية)
@@ -399,20 +414,6 @@ function updateAvailablePool() {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Work Schedule");
     XLSX.writeFile(wb, `Kenan_Daily_Schedule_${new Date().getTime()}.xlsx`);
-}
- entById('available-pool');
-    pool.innerHTML = "";
-    const allReserved = Object.values(allWorkOrders).flatMap(o => o.assets);
-
-    for (const [cat, items] of Object.entries(dataStore)) {
-        const avail = items.filter(i => !allReserved.includes(i));
-        if (avail.length > 0) {
-            const d = document.createElement('div');
-            d.className = 'pool-category';
-            d.innerHTML = `<h4>${cat}</h4><div class="pool-items-group">${avail.map(i => `<span class="pool-item">${i}</span>`).join('')}</div>`;
-            pool.appendChild(d);
-        }
-    }
 }
 
 // 7. وظائف عامة (التنقل، الحذف، التصدير)
