@@ -375,10 +375,7 @@ function exportToExcel() {
     // 3. بناء هيكل الشيت
     // أول سطرين (المعلومات العامة)
     const finalData = [
-        [`DATE : ${dateStr}`, "", "NAME : KENAN ARABIC", "", "", "DAILY WORK SCHEDULE", "", "Mobile # : +966500469088", ""],
-        [" ", "", "", "", "", "", "", "", ""], 
-        [], // سطر فارغ (الثالث)
-        [], // سطر فارغ (الرابع)
+        [`DATE : ${dateStr}`, "KENAN ARABIC","DAILY WORK SCHEDULE", "Safety Engineer: MOHAMED MASHRAQI", "Mobile # : +966500469088"]
     ];
 
     // 4. إعداد رؤوس الجدول (الصف الخامس الملون)
