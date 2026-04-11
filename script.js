@@ -1,7 +1,7 @@
 // ==========================================
 // 1. الإعدادات والروابط الثابتة (Configuration)
 // ==========================================
-const webAppUrl = "https://script.google.com/macros/s/AKfycbyWmZyKUYgRe9H9tq4lGHbRKHYyZVAsR-6TbZkYQ3RlOtFSd6O15fUgZN7Dct1Z0UUKKw/exec";
+const webAppUrl = "https://script.google.com/macros/s/AKfycbzYT2SGSZPAUgEvxksn9PMCZj3GgTGyXZYf6zZZYJx2rGkSBLv7Bh6BCBfohO5iQr4K/exec";
 
 const dataStore = {
     "فرق الحفر والتمديد": ["عمر الطيب", "اشرف", "كرم", "ممدوح", "علاء مرسي", "جامشيد", "جمال", "سيد زين", "كنان"],
