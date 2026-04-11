@@ -1,4 +1,4 @@
-const webAppUrl = "https://script.google.com/macros/s/AKfycbyTaMnqmn12a62ASc8k9hoXg0FrNMUMkRdLnPsejeFuNjiNMgZTPqPaIJFzgSJ7uLx4/exec";
+const webAppUrl = "https://script.google.com/macros/s/AKfycbywCMA-K7oKFimZPYjyDfU3c54D2bKg5tqHFaCYG7G86Qp7Dm8VCbYdIerbGsTwRDI5Lw/exec";
 
 // دالة لجلب البيانات من السحاب عند فتح الموقع
 async function syncFromCloud() {
@@ -228,24 +228,24 @@ function updatePreview() {
 
 // 6. الحفظ والتحديث
 async function confirmSelection() {
-    // 1. استخراج القيم من الواجهة
+    // 1. استخراج القيم من واجهة المستخدم
     const site = document.getElementById('order-site').value;
     const consultant = document.getElementById('order-consultant').value;
     const coords = document.getElementById('order-coords').value.trim();
     const dateStr = new Date().toLocaleDateString('ar-EG');
 
-    // 2. التحقق من البيانات الأساسية
+    // 2. التحقق من صحة البيانات المدخلة
     if (!site || !consultant) {
-        alert("يرجى اختيار الموقع والاستشاري من القائمة");
+        alert("⚠️ يرجى اختيار الموقع والاستشاري من القائمة");
         return;
     }
 
     if (tempSelection.length === 0) {
-        alert("يرجى اختيار فريق أو معدة واحدة على الأقل");
+        alert("⚠️ يرجى اختيار فريق أو معدة واحدة على الأقل قبل الحفظ");
         return;
     }
 
-    // 3. تحديث قاعدة البيانات المحلية (Object)
+    // 3. تحديث الكائن الرئيسي (Object) بالبيانات الجديدة
     allWorkOrders[currentOrderNumber] = {
         engineer: currentEng,
         assets: [...tempSelection],
@@ -255,41 +255,45 @@ async function confirmSelection() {
         date: dateStr
     };
 
-    // 4. الحفظ في ذاكرة المتصفح (Local Storage) كنسخة احتياطية سريعة
+    // 4. الحفظ الفوري في ذاكرة المتصفح (Local Storage) لضمان عدم ضياع البيانات
     localStorage.setItem('all_work_orders', JSON.stringify(allWorkOrders));
 
-    // 5. المزامنة السحابية (إرسال كل البيانات لـ Google Sheets لتحديثها لكل الأجهزة)
+    // 5. محاولة المزامنة السحابية مع Google Apps Script
     try {
-        // إظهار مؤشر تحميل بسيط (اختياري)
         console.log("جاري المزامنة مع السحاب...");
         
+        // استخدام fetch بدون mode: 'no-cors' للسماح بمرور البيانات بشكل سليم
+        // ملاحظة: Apps Script سيقوم بعمل Redirect تلقائي
         const response = await fetch(webAppUrl, {
             method: 'POST',
-            mode: 'no-cors', // لتجنب مشاكل CORS مع Apps Script
-            body: JSON.stringify(allWorkOrders)
+            body: JSON.stringify(allWorkOrders),
+            headers: {
+                'Content-Type': 'text/plain;charset=utf-8'
+            }
         });
 
-        alert("تم الحفظ بنجاح ومزامنة البيانات مع السحاب ✅");
+        // تنبيه النجاح
+        alert("✅ تم الحفظ بنجاح ومزامنة البيانات مع السحاب");
     } catch (error) {
-        console.error("خطأ في المزامنة:", error);
-        alert("تم الحفظ محلياً، ولكن تعذرت المزامنة السحابية. تأكد من الإنترنت.");
+        console.error("خطأ في المزامنة السحابية:", error);
+        alert("📡 تم الحفظ محلياً بنجاح، ولكن تعذرت المزامنة مع السحاب (قد تكون مشكلة إنترنت)");
     }
 
-    // 6. تنظيف الحقول وإعادة ضبط الواجهة
+    // 6. تنظيف الخانات وإعادة ضبط حالة التطبيق
     document.getElementById('order-number').value = "";
     document.getElementById('order-site').selectedIndex = 0;
     document.getElementById('order-consultant').selectedIndex = 0;
     document.getElementById('order-coords').value = "";
     
     currentOrderNumber = "";
-    tempSelection = []; // تصفير الاختيارات المؤقتة
+    tempSelection = []; // تصفير قائمة الاختيارات المؤقتة
 
-    // 7. تحديث جميع القوائم والرسوم في التطبيق فوراً
-    updateAvailablePool(); // تحديث قائمة المعدات المتاحة
-    initEngineers();      // تحديث أسماء المهندسين والتاجز الخاصة بهم
-    renderOrders();       // تحديث سجل الأوامر في الصفحة الرئيسية
+    // 7. تحديث واجهة المستخدم فوراً لتعكس التغييرات
+    updateAvailablePool(); // تحديث المعدات المتاحة (إخفاء المحجوز)
+    initEngineers();      // تحديث التاجز تحت أسماء المهندسين
+    renderOrders();       // تحديث سجل الأوامر المعروض بالأسفل
     
-    // 8. العودة لصفحة المهندسين أو الرئيسية
+    // 8. العودة لصفحة اختيار المهندسين
     goToPage('engineers-page');
 }
 
