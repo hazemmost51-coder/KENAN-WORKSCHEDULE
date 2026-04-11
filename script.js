@@ -1,22 +1,6 @@
-const webAppUrl = "https://script.google.com/macros/s/AKfycbywCMA-K7oKFimZPYjyDfU3c54D2bKg5tqHFaCYG7G86Qp7Dm8VCbYdIerbGsTwRDI5Lw/exec";
+const webAppUrl = "https://script.google.com/macros/s/AKfycbzO7Gq3RzTYWFrPE-rCUBtQ1cTQUNYyo4CKYU4q7c50T61NrAnGzdJ-KRf6hjUu-bQi8g/exec";
 
-// دالة لجلب البيانات من السحاب عند فتح الموقع
-async function syncFromCloud() {
-    try {
-        const response = await fetch(webAppUrl);
-        const cloudData = await response.json();
-        if (Object.keys(cloudData).length > 0) {
-            allWorkOrders = cloudData;
-            localStorage.setItem('all_work_orders', JSON.stringify(allWorkOrders));
-            renderOrders();
-            initEngineers();
-            updateAvailablePool();
-            console.log("تمت المزامنة من السحاب بنجاح");
-        }
-    } catch (e) {
-        console.log("فشلت المزامنة، تم استخدام البيانات المحلية");
-    }
-}
+
 
 // تعديل window.onload
 window.onload = () => {
@@ -235,6 +219,11 @@ async function confirmSelection() {
     const dateStr = new Date().toLocaleDateString('ar-EG');
 
     // 2. التحقق من صحة البيانات المدخلة
+    if (!currentOrderNumber) {
+        alert("⚠️ خطأ: لم يتم تحديد رقم أمر العمل");
+        return;
+    }
+
     if (!site || !consultant) {
         alert("⚠️ يرجى اختيار الموقع والاستشاري من القائمة");
         return;
@@ -245,7 +234,7 @@ async function confirmSelection() {
         return;
     }
 
-    // 3. تحديث الكائن الرئيسي (Object) بالبيانات الجديدة
+    // 3. تحديث الكائن الرئيسي (allWorkOrders) بالبيانات الجديدة
     allWorkOrders[currentOrderNumber] = {
         engineer: currentEng,
         assets: [...tempSelection],
@@ -255,47 +244,29 @@ async function confirmSelection() {
         date: dateStr
     };
 
-    // 4. الحفظ الفوري في ذاكرة المتصفح (Local Storage) لضمان عدم ضياع البيانات
+    // 4. الحفظ الفوري في ذاكرة المتصفح (Local Storage) كنسخة احتياطية
     localStorage.setItem('all_work_orders', JSON.stringify(allWorkOrders));
 
-    // 5. محاولة المزامنة السحابية مع Google Apps Script
+    // 5. المزامنة السحابية مع Google Apps Script
     try {
         console.log("جاري المزامنة مع السحاب...");
         
-        // استخدام fetch بدون mode: 'no-cors' للسماح بمرور البيانات بشكل سليم
-        // ملاحظة: Apps Script سيقوم بعمل Redirect تلقائي
-        const response = await fetch(webAppUrl, {
+        // إرسال البيانات كاملة كـ JSON
+        await fetch(webAppUrl, {
             method: 'POST',
-            body: JSON.stringify(allWorkOrders),
+            mode: 'no-cors', // ضروري جداً لتجنب مشاكل الـ CORS مع Google Script
             headers: {
-                'Content-Type': 'text/plain;charset=utf-8'
-            }
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(allWorkOrders)
         });
 
-        // تنبيه النجاح
+        // تنبيه النجاح (بما أن mode: 'no-cors' لا يعطي استجابة، نفترض النجاح إذا لم يحدث خطأ في الـ fetch)
         alert("✅ تم الحفظ بنجاح ومزامنة البيانات مع السحاب");
+        
     } catch (error) {
         console.error("خطأ في المزامنة السحابية:", error);
-        alert("📡 تم الحفظ محلياً بنجاح، ولكن تعذرت المزامنة مع السحاب (قد تكون مشكلة إنترنت)");
-    }
-
-    // 6. تنظيف الخانات وإعادة ضبط حالة التطبيق
-    document.getElementById('order-number').value = "";
-    document.getElementById('order-site').selectedIndex = 0;
-    document.getElementById('order-consultant').selectedIndex = 0;
-    document.getElementById('order-coords').value = "";
-    
-    currentOrderNumber = "";
-    tempSelection = []; // تصفير قائمة الاختيارات المؤقتة
-
-    // 7. تحديث واجهة المستخدم فوراً لتعكس التغييرات
-    updateAvailablePool(); // تحديث المعدات المتاحة (إخفاء المحجوز)
-    initEngineers();      // تحديث التاجز تحت أسماء المهندسين
-    renderOrders();       // تحديث سجل الأوامر المعروض بالأسفل
-    
-    // 8. العودة لصفحة اختيار المهندسين
-    goToPage('engineers-page');
-}
+        alert
 
 // عرض سجل أوامر العمل مع زر الحذف
 function renderOrders() {
@@ -485,4 +456,25 @@ function clearOrderForm() {
     document.getElementById('order-coords').value = "";
     document.getElementById('order-number').disabled = false;
     document.getElementById('order-title').innerText = "أمر عمل جديد";
+}
+// دالة لجلب البيانات من السحاب عند فتح الموقع
+async function syncFromCloud() {
+    try {
+        const response = await fetch(webAppUrl);
+        const cloudData = await response.json();
+        
+        // التحقق من أن البيانات القادمة ليست فارغة
+        if (cloudData && Object.keys(cloudData).length > 0) {
+            allWorkOrders = cloudData;
+            localStorage.setItem('all_work_orders', JSON.stringify(allWorkOrders));
+            
+            // تحديث الواجهة بعد وصول البيانات
+            renderOrders();
+            initEngineers();
+            updateAvailablePool();
+            console.log("✅ البيانات محدثة من السحاب");
+        }
+    } catch (e) {
+        console.log("ℹ️ لم يتم العثور على بيانات سحابية، تم استخدام النسخة المحلية");
+    }
 }
