@@ -38,6 +38,8 @@ const dataStore = {
 };
 const siteList = ["ابو عريش", "ضمد", "جيزان", "صامطة", "صبيا", "مستودع الشركة", "الورشة"];
 const consultantList = ["سعودي كونسلت", "حسن فقية", "علوم العمران", "محرم باخوم", "الميناء", "بدون"];
+const typeList= [ "فصل", "تشغيلي", "انشائي"];
+const descriptionList = ["سعودي كونسلت", "حسن فقية", "علوم العمران", "محرم باخوم", "الميناء", "بدون"];
 const engineers = ["عمرو", "أحمد", "حازم", "صقر", "محمد", "علاء", "ابراهيم"];
 // قاعدة بيانات أرقام الهواتف (المهندسين والفرق والمعدات)
 const contactLeads = {
@@ -171,6 +173,8 @@ function selectEngineer(name) {
 function populateSelectBoxes() {
     const siteSelect = document.getElementById('order-site');
     const consultantSelect = document.getElementById('order-consultant');
+    const typeSelect = document.getElementById('order-type');
+    const descriptionSelect = document.getElementById('order-description');
 
     // تعبئة المواقع
     siteSelect.innerHTML = '<option value="" disabled selected>اختر الموقع</option>' + 
@@ -179,6 +183,12 @@ function populateSelectBoxes() {
     // تعبئة الاستشاريين
     consultantSelect.innerHTML = '<option value="" disabled selected>اختر اسم الاستشاري</option>' + 
         consultantList.map(con => `<option value="${con}">${con}</option>`).join('');
+
+    typeSelect.innerHTML = '<option value="" disabled selected>اختر نوع العمل </option>' + 
+        typeList.map(typ => `<option value="${typ}">${typ}</option>`).join('');
+
+     descriptionSelect.innerHTML = '<option value="" disabled selected>اختر وصف العمل </option>' + 
+        descriptionList.map(des => `<option value="${des}">${des}</option>`).join('');
 }
 // 5. منطق اختيار المعدات (Playlists) مع منع التكرار
 function renderPlaylists() {
@@ -231,6 +241,8 @@ async function confirmSelection() {
     // 1. استخراج القيم من واجهة المستخدم
     const site = document.getElementById('order-site').value;
     const consultant = document.getElementById('order-consultant').value;
+    const type = document.getElementById('order-type').value;
+    const description = document.getElementById('order-description').value;
     const coords = document.getElementById('order-coords').value.trim();
     const dateStr = new Date().toLocaleDateString('ar-EG');
 
@@ -252,6 +264,8 @@ async function confirmSelection() {
         site: site,
         consultant: consultant,
         coords: coords,
+        type: type, 
+        description: description, 
         date: dateStr
     };
 
@@ -283,6 +297,8 @@ async function confirmSelection() {
     document.getElementById('order-number').value = "";
     document.getElementById('order-site').selectedIndex = 0;
     document.getElementById('order-consultant').selectedIndex = 0;
+    document.getElementById('order-type').selectedIndex = 0;
+    document.getElementById('order-description').selectedIndex = 0;
     document.getElementById('order-coords').value = "";
     
     currentOrderNumber = "";
@@ -343,6 +359,8 @@ function editExistingOrder(no) {
     document.getElementById('order-number').value = no;
     document.getElementById('order-site').value = order.site || "";
     document.getElementById('order-consultant').value = order.consultant || "";
+    document.getElementById('order-type').value = order.type || "";
+    document.getElementById('order-description').value = order.description || "";
     document.getElementById('order-coords').value = order.coords || "";
     
     goToPage('work-order-page');
@@ -417,8 +435,8 @@ function exportToExcel() {
                     { v: d.consultant || "N/A", s: dataStyle },
                     { v: d.site || "N/A", s: dataStyle },
                     { v: d.coords || "N/A", s: dataStyle },
-                    { v: "CONSTRUCTION", s: dataStyle },
-                    { v: "MAINTENANCE", s: dataStyle },
+                    { v: d.type || "N/A", s: dataStyle},
+                    { v: d.description || "N/A", s: dataStyle },
                     { v: asset, s: dataStyle },
                     { v: contactLeads[asset] || "N/A", s: dataStyle },
                     { v: `${d.engineer} - ${contactLeads[d.engineer] || ''}`, s: dataStyle }
@@ -483,6 +501,8 @@ function resetAllData() {
 function clearOrderForm() {
     document.getElementById('order-number').value = "";
     document.getElementById('order-coords').value = "";
+    document.getElementById('order-type').value = "";
+    document.getElementById('order-description').value = "";
     document.getElementById('order-number').disabled = false;
     document.getElementById('order-title').innerText = "أمر عمل جديد";
 }
