@@ -1,3 +1,32 @@
+const webAppUrl = "https://script.google.com/macros/s/AKfycbyTaMnqmn12a62ASc8k9hoXg0FrNMUMkRdLnPsejeFuNjiNMgZTPqPaIJFzgSJ7uLx4/exec";
+
+// دالة لجلب البيانات من السحاب عند فتح الموقع
+async function syncFromCloud() {
+    try {
+        const response = await fetch(webAppUrl);
+        const cloudData = await response.json();
+        if (Object.keys(cloudData).length > 0) {
+            allWorkOrders = cloudData;
+            localStorage.setItem('all_work_orders', JSON.stringify(allWorkOrders));
+            renderOrders();
+            initEngineers();
+            updateAvailablePool();
+            console.log("تمت المزامنة من السحاب بنجاح");
+        }
+    } catch (e) {
+        console.log("فشلت المزامنة، تم استخدام البيانات المحلية");
+    }
+}
+
+// تعديل window.onload
+window.onload = () => {
+    populateSelectBoxes();
+    syncFromCloud(); // أضف هذه لتعمل عند الفتح
+    initEngineers();
+    updateAvailablePool();
+    renderOrders();
+};
+
 // 1. قاعدة البيانات الأساسية للمعدات والفرق
 const dataStore = {
     "فرق الحفر والتمديد": ["عمر الطيب", "اشرف", "كرم", "ممدوح", "علاء مرسي", "جامشيد", "جمال", "سيد زين", "كنان"],
@@ -198,17 +227,25 @@ function updatePreview() {
 }
 
 // 6. الحفظ والتحديث
-function confirmSelection() {
+async function confirmSelection() {
+    // 1. استخراج القيم من الواجهة
     const site = document.getElementById('order-site').value;
     const consultant = document.getElementById('order-consultant').value;
     const coords = document.getElementById('order-coords').value.trim();
     const dateStr = new Date().toLocaleDateString('ar-EG');
 
+    // 2. التحقق من البيانات الأساسية
     if (!site || !consultant) {
         alert("يرجى اختيار الموقع والاستشاري من القائمة");
         return;
     }
 
+    if (tempSelection.length === 0) {
+        alert("يرجى اختيار فريق أو معدة واحدة على الأقل");
+        return;
+    }
+
+    // 3. تحديث قاعدة البيانات المحلية (Object)
     allWorkOrders[currentOrderNumber] = {
         engineer: currentEng,
         assets: [...tempSelection],
@@ -218,47 +255,42 @@ function confirmSelection() {
         date: dateStr
     };
 
+    // 4. الحفظ في ذاكرة المتصفح (Local Storage) كنسخة احتياطية سريعة
     localStorage.setItem('all_work_orders', JSON.stringify(allWorkOrders));
-    
-    // تصفير الحقول
+
+    // 5. المزامنة السحابية (إرسال كل البيانات لـ Google Sheets لتحديثها لكل الأجهزة)
+    try {
+        // إظهار مؤشر تحميل بسيط (اختياري)
+        console.log("جاري المزامنة مع السحاب...");
+        
+        const response = await fetch(webAppUrl, {
+            method: 'POST',
+            mode: 'no-cors', // لتجنب مشاكل CORS مع Apps Script
+            body: JSON.stringify(allWorkOrders)
+        });
+
+        alert("تم الحفظ بنجاح ومزامنة البيانات مع السحاب ✅");
+    } catch (error) {
+        console.error("خطأ في المزامنة:", error);
+        alert("تم الحفظ محلياً، ولكن تعذرت المزامنة السحابية. تأكد من الإنترنت.");
+    }
+
+    // 6. تنظيف الحقول وإعادة ضبط الواجهة
     document.getElementById('order-number').value = "";
     document.getElementById('order-site').selectedIndex = 0;
     document.getElementById('order-consultant').selectedIndex = 0;
     document.getElementById('order-coords').value = "";
     
     currentOrderNumber = "";
-    updateAvailablePool();
-    initEngineers();
-    renderOrders();
+    tempSelection = []; // تصفير الاختيارات المؤقتة
+
+    // 7. تحديث جميع القوائم والرسوم في التطبيق فوراً
+    updateAvailablePool(); // تحديث قائمة المعدات المتاحة
+    initEngineers();      // تحديث أسماء المهندسين والتاجز الخاصة بهم
+    renderOrders();       // تحديث سجل الأوامر في الصفحة الرئيسية
+    
+    // 8. العودة لصفحة المهندسين أو الرئيسية
     goToPage('engineers-page');
-    alert("تم الحفظ بنجاح");
-const webAppUrl = "https://script.google.com/macros/s/AKfycby1FZZ8a4JXdjLcHQKDqTa6EwLHXUKYMfwOsfxEldulO4aZ-lz_qv3Ey-Nli0vyFGzoog/exec";
-
-    // تجهيز البيانات للإرسال
-    // سنقوم بإرسال كل "أصل" (Asset) مسجل في مصفوفة tempSelection
-    for (let asset of tempSelection) {
-        const dataToSend = {
-            code: assetCodes[asset] || "N/A",
-            orderNo: currentOrderNumber,
-            consultant: document.getElementById('order-consultant').value,
-            site: document.getElementById('order-site').value,
-            coords: document.getElementById('order-coords').value,
-            asset: asset,
-            contact: contactLeads[asset] || "N/A",
-            engineer: currentEng,
-            engContact: contactLeads[currentEng] || "N/A"
-        };
-
-        // إرسال البيانات إلى Google Sheets
-        fetch(webAppUrl, {
-            method: 'POST',
-            mode: 'no-cors', // لتجنب مشاكل الـ CORS
-            body: JSON.stringify(dataToSend)
-        });
-    }
-
-    // بقية كود الحفظ في localStorage والتنبيهات
-    alert("تم الحفظ في المتصفح وإرسال البيانات لـ Google Sheets");
 }
 
 // عرض سجل أوامر العمل مع زر الحذف
