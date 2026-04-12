@@ -90,19 +90,29 @@
     </section>
 
     <section id="assets-page" class="page">
-        <div class="selection-layout">
-            <div class="categories-panel">
+    <div class="selection-layout">
+        <div class="categories-panel">
+            <div class="panel-header">
                 <h3>تخصيص لـ: <span id="active-eng"></span></h3>
-                <div id="playlists-container"></div>
+                <p class="hint-text">اختر المعدات والفرق من القائمة</p>
             </div>
-            <div class="summary-panel">
-                <h2>المعدات والفرق المختارة</h2>
+            <div id="playlists-container"></div>
+        </div>
+
+        <div class="summary-panel">
+            <div class="summary-content">
+                <h2>المعدات المختارة</h2>
                 <div id="selected-items-list"></div>
+            </div>
+            
+            <div class="summary-actions">
                 <button class="btn-save" onclick="confirmSelection()">حفظ التعديلات</button>
-                <button class="btn-back" onclick="goToPage('engineers-page')">رجوع</button>
+                <button class="btn-back" onclick="goToPage('engineers-page')">رجوع للوحة التحكم</button>
             </div>
         </div>
-    </section>
+    </div>
+</section>
+
 
     <script src="script.js"></script>
 </body>
