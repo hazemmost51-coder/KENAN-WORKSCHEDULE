@@ -6,16 +6,18 @@ const webAppUrl = "https://script.google.com/macros/s/AKfycbw1YPL8yH0sa-tAt-HuPV
 const dataStore = {
     "فرق الحفر والتمديد": ["عمر الطيب", "اشرف", "كرم", "ممدوح", "علاء مرسي", "جامشيد", "جمال", "سيد زين", "كنان"],
     "فرق الترمنيشن": ["راجا", "اماندو", "بارديب", "جلين", "جيريكو", "كليان", "محمد احمد", "مانيكندن", "سوريش", "جونس"],
-    "فرق الهوائي": ["بالا", "سيلفم", "غلام", "رافي", "افتخار", "الجون", "ارفينال", "جميل", "جينارد"],
+    "فرق الهوائي": ["بالا", "سيلفم", "غلام هوائي", "رافي", "افتخار", "الجون", "ارفينال", "جميل", "جينارد"],
     "الجي سي بيهات": ["سكندر", "ارفيند", "ميراج", "بالا ", "منتاج", "افضل", "رقيب", "زاهد", "يوداف", "فاروق", "امتياز"],
-    "الكرينات": ["معصوم", "سونيل", "غلام", "محمد علي", "قمر الدين"],
+    "الكرينات": ["معصوم", "سونيل", "غلام كرين", "محمد علي", "قمر الدين"],
     "البوبكتات": ["عاشق", "نصر الله", "ديل سعد", "اميرول", "فينود"]
 };
 
 const siteList = ["ابو عريش", "ضمد", "جيزان", "صامطة", "صبيا", "مستودع الشركة", "الورشة"];
 const consultantList = ["سعودي كونسلت", "حسن فقية", "علوم العمران", "محرم باخوم", "الميناء", "بدون"];
 const typeList = ["فصل", "تشغيلي", "انشائي"];
-const descriptionList = ["سعودي كونسلت", "حسن فقية", "علوم العمران", "محرم باخوم", "الميناء", "بدون"];
+const descriptionList = ["صيانة","هيكلة محول هوائي","شد شبكة هوائية","رفع رايزر",,"انزال رايزر",
+      "نهايات ضغط منخفض", "نهايات ضفط متوسط","وصلة لحام ضغط منخفض", "وصلحة لحام ضفط متوسط", "تركيب عدادات", "تركيب محول ارضي",
+     "تركيب وحدة حلقية", "تركيب لوحة توزيع فرعية"];
 const engineers = ["عمرو", "أحمد", "حازم", "صقر", "محمد", "علاء", "ابراهيم"];
 
 const contactLeads = {
@@ -26,7 +28,7 @@ const contactLeads = {
     "جامشيد": "0558085792", "راجا": "0577170684", "اماندو": "0562327780", "بارديب": "0503683969",
     "جلين": "0553155395", "جيريكو": "0555731663", "كليان": "0578578738", "محمد احمد": "0533314859",
     "مانيكندن": "0552325507", "سوريش": "0578622058", "جونس": "0551855778", "بالا": "0507144791",
-    "سيلفم": "0570327804", "غلام": "0566574341", "رافي": "0554509165", "افتخار": "0552581182",
+    "سيلفم": "0570327804", "غلام هوائي": "0566574341", "رافي": "0554509165", "افتخار": "0552581182",
     "الجون": "0501358095", "ارفينال": "0581327592", "جميل": "555877538", "جينارد": "0564479067"
 };
 
@@ -35,7 +37,7 @@ const assetCodes = {
     "جامشيد": "KU6", "جمال": "KU7", "كنان": "KU8", "سيد زين": "KU9", "راجا": "KS1",
     "اماندو": "KS2", "بارديب": "KS3", "جلين": "KS4", "جيريكو": "KS5", "كليان": "KS6",
     "محمد احمد": "KS7", "مانيكندن": "KS8", "سوريش": "KS9", "جونس": "KS10", "بالا": "KO1",
-    "سيلفم": "KO2", "فانكتش": "KO3", "رافي": "KO4", "افتخار": "KO5", "الجون": "KO6",
+    "سيلفم": "KO2", "غلام هوائي": "KO3", "رافي": "KO4", "افتخار": "KO5", "الجون": "KO6",
     "ارفينال": "KO7", "جميل": "KO8", "جينارد": "KO9"
 };
 
@@ -294,26 +296,74 @@ function updateAvailablePool() {
 // ==========================================
 function exportToExcel() {
     const dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
-    const titleStyle = { fill: { fgColor: { rgb: "D3D3D3" } }, font: { bold: true, sz: 16 }, alignment: { horizontal: "center" } };
-    const headerStyle = { fill: { fgColor: { rgb: "EFEFEF" } }, font: { bold: true }, alignment: { horizontal: "center" } };
+    
+    // --- 1. تعريف الستايلات المشتركة ---
+    const commonBorder = { top: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" } };
+    const commonAlignment = { horizontal: "center", vertical: "center" };
+    const titleStyle = { fill: { fgColor: { rgb: "D3D3D3" } }, font: { bold: true, sz: 16 }, alignment: commonAlignment, border: commonBorder };
+    const headerStyle = { fill: { fgColor: { rgb: "EFEFEF" } }, font: { bold: true }, alignment: commonAlignment, border: commonBorder };
+    const cellStyle = { alignment: commonAlignment, border: commonBorder };
 
-    const finalData = [[{ v: `DAILY WORK SCHEDULE - ${dateStr} - KENAN ARABIAN`, s: titleStyle }]];
-    const headers = ["GROUP CODE", "WORK ORDER", "CONSULTANT", "LOCATION", "COORDINATES", "TYPE", "DESCRIPTION", "FOREMAN", "MOBILE", "ENGINEER"].map(h => ({v: h, s: headerStyle}));
-    finalData.push(headers);
+    const headerLabels = ["كود الفرقة", "امر العمل", "الاستشاري", "الموقع", "الاحداثي", "نوع العمل", "وصف العمل", "اسم الفرقة", "رقم هاتف مسؤول الفرقة", "المهندس المسؤول"];
+    const headers = headerLabels.map(h => ({ v: h, s: headerStyle }));
 
+    // مصفوفات لتخزين بيانات الشيت الأول والثاني
+    let dataWithConsultant = [[{ v: `${dateStr} - جدول الاعمال (بإستشاري) - كنان العربية`, s: titleStyle }], headers];
+    let dataNoConsultant = [[{ v: `${dateStr} - جدول الاعمال (بدون إستشاري) - كنان العربية`, s: titleStyle }], headers];
+
+    // --- 2. توزيع البيانات بناءً على الاستشاري ---
     Object.entries(allWorkOrders).forEach(([no, d]) => {
         d.assets.forEach(asset => {
-            finalData.push([
-                assetCodes[asset] || "N/A", no, d.consultant, d.site, d.coords, d.type, d.description, asset, contactLeads[asset] || "N/A", `${d.engineer} - ${contactLeads[d.engineer] || ''}`
-            ]);
+            const row = [
+                assetCodes[asset] || "N/A", 
+                no, 
+                d.consultant || "بدون", 
+                d.site, 
+                d.coords, 
+                d.type, 
+                d.description, 
+                asset, 
+                contactLeads[asset] || "N/A", 
+                `${d.engineer} - ${contactLeads[d.engineer] || ''}`
+            ].map(cellValue => ({ v: cellValue, s: cellStyle }));
+
+            // شرط الفلترة: إذا كان الاستشاري "بدون" أو فارغ
+            if (!d.consultant || d.consultant.trim() === "بدون") {
+                dataNoConsultant.push(row);
+            } else {
+                dataWithConsultant.push(row);
+            }
         });
     });
 
-    const ws = XLSX.utils.aoa_to_sheet(finalData);
-    ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 9 } }];
+    // --- 3. وظيفة مساعدة لإنشاء الشيت وتنسيقه ---
+    const createSheet = (data) => {
+        const ws = XLSX.utils.aoa_to_sheet(data);
+        // دمج العنوان
+        ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 9 } }];
+        // حساب العرض التلقائي
+        ws['!cols'] = headerLabels.map((_, colIndex) => {
+            const maxLength = data.reduce((max, row) => {
+                const cell = row[colIndex];
+                const cellValue = cell && cell.v ? cell.v.toString() : "";
+                return Math.max(max, cellValue.length);
+            }, 12);
+            return { wch: maxLength + 2 };
+        });
+        return ws;
+    };
+
+    // --- 4. إنشاء ملف العمل وإضافة الشيتات ---
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Work Schedule");
-    XLSX.writeFile(wb, `Kenan_Schedule_${new Date().getTime()}.xlsx`);
+    
+    const wsWith = createSheet(dataWithConsultant);
+    const wsWithout = createSheet(dataNoConsultant);
+
+    XLSX.utils.book_append_sheet(wb, wsWith, "بإستشاري");
+    XLSX.utils.book_append_sheet(wb, wsWithout, "بدون إستشاري");
+
+    // تصدير الملف
+    XLSX.writeFile(wb, `Kenan_Schedule${dateStr}.xlsx`);
 }
 
 function goToPage(id) {
