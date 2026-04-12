@@ -164,3 +164,99 @@ img {
   max-width: 500px; /* لن يتجاوز عرض الصورة 500 بكسل مهما كان حجم الشاشة */
   height: auto;   /* الحفاظ على تناسق الأبعاد ومنع تمدد الصورة بشكل سيء */
 }
+
+/* تنسيقات افتراضية محسنة لصفحة الأصول */
+.selection-layout {
+    display: flex;
+    gap: 20px;
+    height: 85vh;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.categories-panel {
+    width: 400px;
+    background: var(--bg-card);
+    padding: 20px;
+    border-radius: 20px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+}
+
+.summary-panel {
+    flex: 1;
+    background: rgba(21, 27, 43, 0.6);
+    border-radius: 20px;
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border: 1px solid var(--border-color);
+}
+
+.hint-text {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-bottom: 15px;
+}
+
+/* ==========================================
+   تنسيقات الهواتف (Responsive Design)
+   ========================================== */
+@media (max-width: 768px) {
+    .page {
+        padding: 10px; /* تقليل الهوامش في الموبايل */
+    }
+
+    .selection-layout {
+        flex-direction: column; /* جعل العناصر فوق بعضها */
+        height: auto; 
+        gap: 15px;
+    }
+
+    .categories-panel {
+        width: 100%; /* تأخذ كامل العرض */
+        max-height: 400px; /* تحديد ارتفاع أقصى للاختيار مع إمكانية التمرير */
+        order: 1; /* تظهر أولاً */
+    }
+
+    .summary-panel {
+        width: 100%;
+        order: 2; /* تظهر ثانياً */
+        padding: 20px;
+        min-height: 300px;
+    }
+
+    /* تكبير الأزرار لتسهيل اللمس */
+    .item-chip {
+        padding: 12px 18px; 
+        font-size: 0.95rem;
+        margin: 6px;
+    }
+
+    .btn-save {
+        width: 100%; /* زر الحفظ بعرض الشاشة */
+        padding: 15px;
+        font-size: 1rem;
+    }
+
+    .summary-actions {
+        margin-top: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    /* تحسين العرض في الهواتف الصغيرة جداً */
+    h2 { font-size: 1.4rem; }
+    h3 { font-size: 1.1rem; }
+}
+
+/* تحسين شكل السكرول بار (Scrollbar) ليناسب الموبايل */
+.categories-panel::-webkit-scrollbar {
+    width: 5px;
+}
+.categories-panel::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 10px;
+}
