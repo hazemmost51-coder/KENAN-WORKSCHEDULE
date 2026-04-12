@@ -260,3 +260,84 @@ img {
     background: var(--primary);
     border-radius: 10px;
 }
+@media (max-width: 768px) {
+    /* جعل الحاوية الأساسية تأخذ كامل الارتفاع */
+    .selection-layout {
+        flex-direction: column;
+        height: 100vh;
+        position: relative;
+    }
+
+    /* قسم اختيار المعدات: أضفنا هامش سفلي لكي لا يختفي المحتوى خلف الشريط السفلي */
+    .categories-panel {
+        width: 100%;
+        flex: 1;
+        margin-bottom: 160px; /* مساحة كافية للشريط السفلي */
+        padding: 15px;
+    }
+
+    /* تحويل لوحة الملخص إلى شريط سفلي ثابت */
+    .summary-panel {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        background: var(--bg-card);
+        border-top: 2px solid var(--primary);
+        border-radius: 20px 20px 0 0; /* انحناء من الأعلى فقط */
+        padding: 15px;
+        box-shadow: 0 -10px 25px rgba(0,0,0,0.5);
+        z-index: 1000;
+        display: flex;
+        flex-direction: column; /* ترتيب العناصر داخله (القائمة ثم الأزرار) */
+        gap: 12px;
+    }
+
+    /* جعل قائمة المعدات المختارة تسحب بشكل أفقي (Horizontal Scroll) */
+    #selected-items-list {
+        display: flex;
+        flex-direction: row; /* عرض أفقي للمعدات المختارة */
+        overflow-x: auto; /* السماح بالسحب لليمين واليسار */
+        gap: 8px;
+        padding-bottom: 5px;
+        scrollbar-width: none; /* إخفاء السكرول بار في فايرفوكس */
+    }
+
+    #selected-items-list::-webkit-scrollbar {
+        display: none; /* إخفاء السكرول بار في كروم وسافاري */
+    }
+
+    /* جعل عناصر المعدات المختارة أصغر قليلاً لتناسب الشريط */
+    .summary-panel .item-chip {
+        white-space: nowrap; /* منع النص من النزول لسطر جديد */
+        padding: 8px 12px;
+        font-size: 0.8rem;
+        margin: 0;
+    }
+
+    /* تنسيق الأزرار لتكون بجانب بعضها */
+    .summary-actions {
+        display: flex;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .btn-save, .btn-back {
+        flex: 1; /* تقسيم المساحة بالتساوي بين الزرين */
+        margin: 0;
+        padding: 12px;
+        font-size: 0.9rem;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .summary-panel h2 {
+        font-size: 0.9rem;
+        margin-bottom: 5px;
+        color: var(--text-muted);
+        text-align: center;
+    }
+}
