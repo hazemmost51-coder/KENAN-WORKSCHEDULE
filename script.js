@@ -1,7 +1,7 @@
 // ==========================================
 // 1. الإعدادات والروابط الثابتة (Configuration)
 // ==========================================
-const webAppUrl = "https://script.google.com/macros/s/AKfycbw1YPL8yH0sa-tAt-HuPVe4SUN25qxOF2J7SGKJQ7NF8Ryhhnolyq_C4CiN2YeLEJEH/exec";
+const webAppUrl = "https://script.google.com/macros/s/AKfycbyxiWKL0wWtAjMrtqZvJwJk6-uROAquYA08gAqdhfhF0YfVS0ZQM2ikiQzU97RBt1nJ1g/exec";
 
 const dataStore = {
     "فرق الحفر والتمديد": ["عمر الطيب", "اشرف", "كرم", "ممدوح", "علاء مرسي", "جامشيد", "جمال", "سيد زين", "كنان"],
@@ -382,8 +382,25 @@ function clearOrderForm() {
     tempSelection = [];
 }
 
-function resetAllData() {
-    if(confirm("تحذير: سيتم حذف كافة البيانات نهائياً!")) {
+async function resetAllData() {
+    if (confirm("تحذير: سيتم حذف كافة البيانات من الهاتف ومن السحاب نهائياً! هل أنت متأكد؟")) {
+        try {
+            // إرسال طلب للمسح من جوجل شيت
+            const response = await fetch(webAppUrl, {
+                method: 'POST',
+                body: JSON.stringify({ action: "DELETE_ALL" }), // نرسل أمر المسح
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+            });
+
+            if (response.ok) {
+                alert("✅ تم مسح البيانات من السحاب بنجاح");
+            }
+        } catch (error) {
+            console.error("خطأ أثناء محاولة المسح من السحاب:", error);
+            alert("⚠️ فشل المسح من السحاب، ولكن سيتم المسح محلياً.");
+        }
+
+        // مسح البيانات محلياً
         localStorage.clear();
         location.reload();
     }
