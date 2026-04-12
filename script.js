@@ -308,8 +308,8 @@ function exportToExcel() {
     const headers = headerLabels.map(h => ({ v: h, s: headerStyle }));
 
     // مصفوفات لتخزين بيانات الشيت الأول والثاني
-    let dataWithConsultant = [[{ v: `${dateStr} - جدول الاعمال (بإستشاري) - كنان العربية مهندس السلامة (0500469088) - `, s: titleStyle }], headers];
-    let dataNoConsultant = [[{ v: `${dateStr} - جدول الاعمال (بإستشاري) - كنان العربية - مهندس السلامة (0500469088) -`, s: titleStyle }], headers];
+    let dataWithConsultant = [[{ v: `${dateStr} - جدول الاعمال اليومي شركة كنان - بدون استشاري - مهندس السلامة: محمد مشرقي (0) - `, s: titleStyle }], headers];
+    let dataNoConsultant = [[{ v: `${dateStr} - جدول الاعمال اليومي شركة كنان - استشاري - مهندس السلامة: محمد مشرقي (0) - `, s: titleStyle }], headers];
 
     // --- 2. توزيع البيانات بناءً على الاستشاري ---
     Object.entries(allWorkOrders).forEach(([no, d]) => {
