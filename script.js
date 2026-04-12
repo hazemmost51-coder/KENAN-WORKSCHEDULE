@@ -1,5 +1,5 @@
 // ==========================================
-// 1. الإعدادات والروابط الثابتة (Configuration)
+// 1. الإعدادات والروابط الثابتة (Configuration) 
 // ==========================================
 const webAppUrl = "https://script.google.com/macros/s/AKfycbyxiWKL0wWtAjMrtqZvJwJk6-uROAquYA08gAqdhfhF0YfVS0ZQM2ikiQzU97RBt1nJ1g/exec";
 
