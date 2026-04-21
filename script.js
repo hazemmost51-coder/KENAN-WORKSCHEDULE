@@ -298,8 +298,7 @@ function updateAvailablePool() {
 function exportToExcel() {
     const dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
     
-    // --- 1. تعريف الستايلات المشتركة ---
-    // ملاحظة: الستايلات تعمل مع مكتبة xlsx-js-style
+    // --- 1. تعريف الستايلات ---
     const commonBorder = { top: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" } };
     const commonAlignment = { horizontal: "center", vertical: "center" };
     const titleStyle = { fill: { fgColor: { rgb: "D3D3D3" } }, font: { bold: true, sz: 16 }, alignment: commonAlignment, border: commonBorder };
@@ -309,48 +308,30 @@ function exportToExcel() {
     const headerLabels = ["كود الفرقة", "امر العمل", "الاستشاري", "الموقع", "الاحداثي", "نوع العمل", "وصف العمل", "اسم الفرقة", "رقم هاتف مسؤول الفرقة", "المهندس المسؤول"];
     const headers = headerLabels.map(h => ({ v: h, s: headerStyle }));
 
-    // دالة مساعدة لإنشاء صف العنوان المدمج (10 أعمدة) بحدود كاملة
     const createTitleRow = (text) => {
         const row = [{ v: text, s: titleStyle }];
         for (let i = 1; i < 10; i++) row.push({ v: "", s: titleStyle });
         return row;
     };
 
-    // مصفوفات البيانات
-    let dataWithConsultant = [
-        createTitleRow(`${dateStr} - جدول الاعمال اليومي - بإستشاري`),
-        headers
-    ];
-    let dataNoConsultant = [
-        createTitleRow(`${dateStr} - جدول الاعمال اليومي - بدون استشاري`),
-        headers
-    ];
+    // مصفوفات البيانات المنفصلة
+    let dataWithConsultant = [createTitleRow(`${dateStr} - جدول الاعمال اليومي - بإستشاري`), headers];
+    let dataNoConsultant = [createTitleRow(`${dateStr} - جدول الاعمال اليومي - بدون استشاري`), headers];
 
     // --- 2. توزيع البيانات وفلترتها ---
     Object.entries(allWorkOrders).forEach(([no, d]) => {
         d.assets.forEach(asset => {
-            // التحقق من وجود كود للفرقة
             const code = assetCodes[asset];
             
-            // إذا لم يوجد كود (أو القيمة غير معرفة)، يتم تخطي هذه الفرقة تماماً
-            if (!code || code === "N/A" || code.trim() === "") {
-                return; 
-            }
+            // تخطي أي فرقة ليس لها كود
+            if (!code || code === "N/A" || code.trim() === "") return; 
 
             const row = [
-                code, 
-                no, 
-                d.consultant || "بدون", 
-                d.site, 
-                d.coords, 
-                d.type, 
-                d.description, 
-                asset, 
-                contactLeads[asset] || "N/A", 
+                code, no, d.consultant || "بدون", d.site, d.coords, d.type, 
+                d.description, asset, contactLeads[asset] || "N/A", 
                 `${d.engineer} - ${contactLeads[d.engineer] || ''}`
             ].map(cellValue => ({ v: cellValue, s: cellStyle }));
 
-            // الفرز بناءً على وجود استشاري
             if (!d.consultant || d.consultant.trim() === "بدون") {
                 dataNoConsultant.push(row);
             } else {
@@ -359,41 +340,40 @@ function exportToExcel() {
         });
     });
 
-    // --- 3. وظيفة مساعدة لإنشاء الشيت وتنسيقه ---
+    // --- 3. وظيفة إنشاء الشيت وتنسيقه ---
     const createSheet = (data) => {
         const ws = XLSX.utils.aoa_to_sheet(data);
-        
-        // ضبط اتجاه الشيت ليكون من اليمين لليسار (العربية)
         if(!ws['!views']) ws['!views'] = [{}];
-        ws['!views'][0].RTL = true;
-
-        // دمج العنوان في الصف الأول
+        ws['!views'][0].RTL = true; // اتجاه اليمين لليسار
         ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 9 } }];
-
-        // حساب العرض التلقائي للأعمدة
         ws['!cols'] = headerLabels.map((_, colIndex) => {
             const maxLength = data.reduce((max, row) => {
                 const cell = row[colIndex];
                 const cellValue = cell && cell.v ? cell.v.toString() : "";
                 return Math.max(max, cellValue.length);
             }, 12);
-            return { wch: maxLength + 5 }; // إضافة هامش بسيط
+            return { wch: maxLength + 5 };
         });
         return ws;
     };
 
-    // --- 4. إنشاء ملف العمل وإضافة الشيتات ---
-    const wb = XLSX.utils.book_new();
-    
-    const wsWith = createSheet(dataWithConsultant);
-    const wsWithout = createSheet(dataNoConsultant);
+    // --- 4. تصدير الملفين بشكل منفصل ---
 
-    XLSX.utils.book_append_sheet(wb, wsWith, "بإستشاري");
-    XLSX.utils.book_append_sheet(wb, wsWithout, "بدون إستشاري");
+    // الملف الأول: بإستشاري
+    if (dataWithConsultant.length > 2) { // التحقق من وجود بيانات (أكثر من العنوان والهيدر)
+        const wbWith = XLSX.utils.book_new();
+        const wsWith = createSheet(dataWithConsultant);
+        XLSX.utils.book_append_sheet(wbWith, wsWith, "بإستشاري");
+        XLSX.writeFile(wbWith, `Schedule_With_Consultant_${dateStr.replace(/ /g, '_')}.xlsx`);
+    }
 
-    // تصدير الملف النهائي
-    const fileName = `Kenan_Schedule_${dateStr.replace(/ /g, '_')}.xlsx`;
-    XLSX.writeFile(wb, fileName);
+    // الملف الثاني: بدون إستشاري
+    if (dataNoConsultant.length > 2) {
+        const wbNo = XLSX.utils.book_new();
+        const wsWithout = createSheet(dataNoConsultant);
+        XLSX.utils.book_append_sheet(wbNo, wsWithout, "بدون إستشاري");
+        XLSX.writeFile(wbNo, `Schedule_No_Consultant_${dateStr.replace(/ /g, '_')}.xlsx`);
+    }
 }
 
 function goToPage(id) {
