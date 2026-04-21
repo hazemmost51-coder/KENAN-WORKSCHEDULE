@@ -299,6 +299,7 @@ function exportToExcel() {
     const dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
     
     // --- 1. تعريف الستايلات المشتركة ---
+    // ملاحظة: الستايلات تعمل مع مكتبة xlsx-js-style
     const commonBorder = { top: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" } };
     const commonAlignment = { horizontal: "center", vertical: "center" };
     const titleStyle = { fill: { fgColor: { rgb: "D3D3D3" } }, font: { bold: true, sz: 16 }, alignment: commonAlignment, border: commonBorder };
@@ -308,15 +309,36 @@ function exportToExcel() {
     const headerLabels = ["كود الفرقة", "امر العمل", "الاستشاري", "الموقع", "الاحداثي", "نوع العمل", "وصف العمل", "اسم الفرقة", "رقم هاتف مسؤول الفرقة", "المهندس المسؤول"];
     const headers = headerLabels.map(h => ({ v: h, s: headerStyle }));
 
-    // مصفوفات لتخزين بيانات الشيت الأول والثاني
-    let dataWithConsultant = [[{ v: `${dateStr} - جدول الاعمال اليومي شركة كنان - استشاري - مهندس السلامة: محمد مشرقي (+966 50 046 9088 ) - `, s: titleStyle }], headers];
-    let dataNoConsultant = [[{ v: `${dateStr} - جدول الاعمال اليومي شركة كنان -بدون استشاري - مهندس السلامة: محمد مشرقي (+966 50 046 9088) - `, s: titleStyle }], headers];
+    // دالة مساعدة لإنشاء صف العنوان المدمج (10 أعمدة) بحدود كاملة
+    const createTitleRow = (text) => {
+        const row = [{ v: text, s: titleStyle }];
+        for (let i = 1; i < 10; i++) row.push({ v: "", s: titleStyle });
+        return row;
+    };
 
-    // --- 2. توزيع البيانات بناءً على الاستشاري ---
+    // مصفوفات البيانات
+    let dataWithConsultant = [
+        createTitleRow(`${dateStr} - جدول الاعمال اليومي - بإستشاري`),
+        headers
+    ];
+    let dataNoConsultant = [
+        createTitleRow(`${dateStr} - جدول الاعمال اليومي - بدون استشاري`),
+        headers
+    ];
+
+    // --- 2. توزيع البيانات وفلترتها ---
     Object.entries(allWorkOrders).forEach(([no, d]) => {
         d.assets.forEach(asset => {
+            // التحقق من وجود كود للفرقة
+            const code = assetCodes[asset];
+            
+            // إذا لم يوجد كود (أو القيمة غير معرفة)، يتم تخطي هذه الفرقة تماماً
+            if (!code || code === "N/A" || code.trim() === "") {
+                return; 
+            }
+
             const row = [
-                assetCodes[asset] || "N/A", 
+                code, 
                 no, 
                 d.consultant || "بدون", 
                 d.site, 
@@ -328,7 +350,7 @@ function exportToExcel() {
                 `${d.engineer} - ${contactLeads[d.engineer] || ''}`
             ].map(cellValue => ({ v: cellValue, s: cellStyle }));
 
-            // شرط الفلترة: إذا كان الاستشاري "بدون" أو فارغ
+            // الفرز بناءً على وجود استشاري
             if (!d.consultant || d.consultant.trim() === "بدون") {
                 dataNoConsultant.push(row);
             } else {
@@ -340,16 +362,22 @@ function exportToExcel() {
     // --- 3. وظيفة مساعدة لإنشاء الشيت وتنسيقه ---
     const createSheet = (data) => {
         const ws = XLSX.utils.aoa_to_sheet(data);
-        // دمج العنوان
+        
+        // ضبط اتجاه الشيت ليكون من اليمين لليسار (العربية)
+        if(!ws['!views']) ws['!views'] = [{}];
+        ws['!views'][0].RTL = true;
+
+        // دمج العنوان في الصف الأول
         ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 9 } }];
-        // حساب العرض التلقائي
+
+        // حساب العرض التلقائي للأعمدة
         ws['!cols'] = headerLabels.map((_, colIndex) => {
             const maxLength = data.reduce((max, row) => {
                 const cell = row[colIndex];
                 const cellValue = cell && cell.v ? cell.v.toString() : "";
                 return Math.max(max, cellValue.length);
             }, 12);
-            return { wch: maxLength + 2 };
+            return { wch: maxLength + 5 }; // إضافة هامش بسيط
         });
         return ws;
     };
@@ -363,8 +391,9 @@ function exportToExcel() {
     XLSX.utils.book_append_sheet(wb, wsWith, "بإستشاري");
     XLSX.utils.book_append_sheet(wb, wsWithout, "بدون إستشاري");
 
-    // تصدير الملف
-    XLSX.writeFile(wb, `Kenan_Schedule${dateStr}.xlsx`);
+    // تصدير الملف النهائي
+    const fileName = `Kenan_Schedule_${dateStr.replace(/ /g, '_')}.xlsx`;
+    XLSX.writeFile(wb, fileName);
 }
 
 function goToPage(id) {
