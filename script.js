@@ -315,9 +315,8 @@ function exportToExcel() {
     };
 
     // مصفوفات البيانات المنفصلة
-    let dataWithConsultant = [createTitleRow(`${dateStr} - جدول الاعمال اليومي - بإستشاري`), headers];
-    let dataNoConsultant = [createTitleRow(`${dateStr} - جدول الاعمال اليومي - بدون استشاري`), headers];
-
+    let dataWithConsultant = [createTitleRow(`${dateStr} - جدول الاعمال اليومي شركة كنان مهندس السلامة محمد مشرقي: 0500469088 - بإستشاري`), headers];
+    let dataNoConsultant = [createTitleRow(`${dateStr} - جدول الاعمال اليومي شركة كنان مهندس السلامة محمد مشرقي: 0500469088 - بدون استشاري`), headers];
     // --- 2. توزيع البيانات وفلترتها ---
     Object.entries(allWorkOrders).forEach(([no, d]) => {
         d.assets.forEach(asset => {
